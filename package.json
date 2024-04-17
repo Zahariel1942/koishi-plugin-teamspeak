@@ -1,7 +1,15 @@
 {
   "name": "koishi-plugin-teamspeak",
-  "description": "",
-  "version": "0.0.1",
+  "description": "teamspeak传达室老大爷，帮你盯着谁进来了",
+  "version": "1.0.0",
+  "contributors": [
+    "Zahariel1942 <nakating@gmail.com>"
+  ],
+  "homepage": "https://github.com/Zahariel1942/koishi-plugin-teamspeak",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Zahariel1942/koishi-plugin-teamspeak.git"
+  },
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -9,14 +17,15 @@
     "dist"
   ],
   "license": "MIT",
-  "scripts": {},
   "keywords": [
     "chatbot",
     "koishi",
     "plugin"
   ],
-  "devDependencies": {},
   "peerDependencies": {
     "koishi": "^4.17.4"
+  },
+  "dependencies": {
+    "ts3-nodejs-library": "^3.5.1"
   }
 }
