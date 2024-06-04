@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-teamspeak",
   "description": "teamspeak传达室老大爷，帮你盯着谁进来了",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "contributors": [
     "Zahariel1942 <nakating@gmail.com>"
   ],

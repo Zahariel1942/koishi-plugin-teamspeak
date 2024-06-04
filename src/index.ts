@@ -10,13 +10,19 @@ import {
 export const name = "teamspeak";
 
 export interface Config {
-  groupId: string;
+  groups: string[];
+  host: string;
+  port: number;
   user: string;
   password: string;
 }
 
 export const Config: Schema<Config> = Schema.object({
-  groupId: Schema.string().description("群号").default(""),
+  groups: Schema.array(Schema.string())
+    .description("监听TS通知的群")
+    .default([]),
+  host: Schema.string().description("服务器IP").default("localhost"),
+  port: Schema.number().description("服务器端口").default(10011),
   user: Schema.string().description("ServerQuery用户名").default(""),
   password: Schema.string().description("ServerQuery密码").default(""),
 });
@@ -28,7 +34,10 @@ export function apply(ctx: Context, config: Config) {
 
   const joinListener = (e: ClientConnectEvent) => {
     if (e.client.type === ClientType.ServerQuery) return;
-    bot.sendMessage(config.groupId, `${e.client.nickname} 进入了TS.`);
+
+    config.groups.forEach((groupId) => {
+      bot.sendMessage(groupId, `${e.client.nickname} 进入了TS.`);
+    });
   };
 
   const closeListener = async () => {
@@ -74,9 +83,9 @@ export function apply(ctx: Context, config: Config) {
 
     try {
       instance = await TeamSpeak.connect({
-        host: "localhost",
+        host: config.host,
         protocol: QueryProtocol.RAW, //optional
-        queryport: 10011, //optional
+        queryport: config.port, //optional
         serverport: 9987,
         username: config.user,
         password: config.password,
