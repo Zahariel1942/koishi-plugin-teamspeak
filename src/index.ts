@@ -32,7 +32,7 @@ export function apply(ctx: Context, config: Config) {
   const bot = ctx.bots[0];
   let instance: TeamSpeak | null;
 
-  const joinListener = (e: ClientConnectEvent) => {
+  const onClientJoin = (e: ClientConnectEvent) => {
     if (e.client.type === ClientType.ServerQuery) return;
 
     config.groups.forEach((groupId) => {
@@ -40,8 +40,13 @@ export function apply(ctx: Context, config: Config) {
     });
   };
 
-  const closeListener = async () => {
-    logger.info("disconnected, trying to reconnect...");
+  const onReady = async () => {
+    logger.info("connected!");
+  };
+
+  const onConnectionClose = async (e: Error) => {
+    logger.warn("disconnected", JSON.stringify(e));
+    logger.info("trying to reconnect...");
     await instance.reconnect(-1, 1000);
     logger.info("reconnected!");
   };
@@ -92,8 +97,10 @@ export function apply(ctx: Context, config: Config) {
         nickname: "TSBot",
       });
 
-      instance.on("clientconnect", joinListener);
-      instance.on("close", closeListener);
+      instance.on("ready", onReady);
+      instance.on("clientconnect", onClientJoin);
+      instance.on("close", onConnectionClose);
+      instance.on("error", onConnectionClose);
     } catch (error) {
       logger.error(error);
     }
