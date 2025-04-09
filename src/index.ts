@@ -51,14 +51,50 @@ export function apply(ctx: Context, config: Config) {
     logger.info("reconnected!");
   };
 
+  const connect = async () => {
+    try {
+      instance = await TeamSpeak.connect({
+        host: config.host,
+        protocol: QueryProtocol.RAW, //optional
+        queryport: config.port, //optional
+        serverport: 9987,
+        username: config.user,
+        password: config.password,
+        nickname: "TSBot",
+      });
+
+      instance.on("ready", onReady);
+      instance.on("clientconnect", onClientJoin);
+      instance.on("close", onConnectionClose);
+      instance.on("error", onConnectionClose);
+    } catch (error) {
+      logger.error(error);
+    }
+  };
+
+  const disconnected = () => {
+    if (!instance) return;
+    instance.removeAllListeners();
+    instance.quit();
+    instance = null;
+  };
+
   ctx
     .command("ts", "谁在ts上?")
     .alias("谁在ts")
     .action(async ({ session }) => {
-      if (!instance) return;
-      const clients = await instance.clientList({
-        clientType: ClientType.Regular,
-      });
+      if (!instance) {
+        await connect();
+      }
+
+      let clients = [];
+      try {
+        clients = await instance.clientList({
+          clientType: ClientType.Regular,
+        });
+      } catch (error) {
+        return JSON.stringify(error);
+      }
 
       if (!clients.length) return "没有人.";
 
@@ -84,31 +120,10 @@ export function apply(ctx: Context, config: Config) {
     });
 
   ctx.on("ready", async () => {
-    if (instance) return;
-
-    try {
-      instance = await TeamSpeak.connect({
-        host: config.host,
-        protocol: QueryProtocol.RAW, //optional
-        queryport: config.port, //optional
-        serverport: 9987,
-        username: config.user,
-        password: config.password,
-        nickname: "TSBot",
-      });
-
-      instance.on("ready", onReady);
-      instance.on("clientconnect", onClientJoin);
-      instance.on("close", onConnectionClose);
-      instance.on("error", onConnectionClose);
-    } catch (error) {
-      logger.error(error);
-    }
+    connect();
   });
 
   ctx.on("dispose", () => {
-    if (!instance) return;
-    instance.removeAllListeners();
-    instance.quit();
+    disconnected();
   });
 }
